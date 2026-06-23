@@ -1,0 +1,203 @@
+{
+  "generated_at": "2026-06-23",
+  "project": "ecommerce_after_sales_agent",
+  "metrics": {
+    "policy_document_count": {
+      "value": 10,
+      "source": "data/indexes/policy_index_manifest.json",
+      "meaning": "当前模拟政策知识库中的 Markdown 政策文档数量。",
+      "resume_ready": true,
+      "recommended_resume_text": "构建 10 份模拟电商售后政策文档知识库。",
+      "boundary": "仅代表当前模拟政策库规模，不代表真实平台政策覆盖。"
+    },
+    "policy_chunk_count": {
+      "value": 42,
+      "source": "data/indexes/policy_index_manifest.json",
+      "meaning": "按二级标题切分后的政策 chunk 数量。",
+      "resume_ready": true,
+      "recommended_resume_text": "将 10 份政策文档切分为 42 个可追溯政策 chunk。",
+      "boundary": "chunk 数量会随政策文档结构变化。"
+    },
+    "bm25_hit_at_1": {
+      "value": 0.6666666666666666,
+      "source": "eval_results/policy_retrieval_comparison.json",
+      "meaning": "BM25 在当前政策检索评测集中 Top1 命中期望来源的比例。",
+      "resume_ready": true,
+      "recommended_resume_text": "在 18 条政策检索评测题上，BM25 Hit@1 为 0.667、Hit@3 为 1.0。",
+      "boundary": "仅代表当前自定义模拟政策检索评测集。"
+    },
+    "bm25_hit_at_3": {
+      "value": 1.0,
+      "source": "eval_results/policy_retrieval_comparison.json",
+      "meaning": "BM25 在当前政策检索评测集中 Top3 命中期望来源的比例。",
+      "resume_ready": true,
+      "recommended_resume_text": "BM25 Top3 在当前政策检索评测集中达到 1.0。",
+      "boundary": "仅代表当前 18 条评测题。"
+    },
+    "dense_hit_at_1": {
+      "value": 0.7333333333333333,
+      "source": "eval_results/policy_retrieval_comparison.json",
+      "meaning": "Dense FAISS 检索在当前政策检索评测集中 Top1 命中期望来源的比例。",
+      "resume_ready": true,
+      "recommended_resume_text": "对比 BM25 / Dense / Hybrid 三种检索，Dense Hit@1 为 0.733。",
+      "boundary": "使用 BAAI/bge-small-zh-v1.5 与当前模拟政策集。"
+    },
+    "dense_hit_at_3": {
+      "value": 0.8666666666666667,
+      "source": "eval_results/policy_retrieval_comparison.json",
+      "meaning": "Dense FAISS 检索在当前政策检索评测集中 Top3 命中期望来源的比例。",
+      "resume_ready": true,
+      "recommended_resume_text": "Dense Top3 命中率为 0.867。",
+      "boundary": "仅代表当前政策检索评测集。"
+    },
+    "hybrid_hit_at_1": {
+      "value": 0.7333333333333333,
+      "source": "eval_results/policy_retrieval_comparison.json",
+      "meaning": "Hybrid RRF 检索在当前政策检索评测集中 Top1 命中期望来源的比例。",
+      "resume_ready": true,
+      "recommended_resume_text": "实现 BM25、Dense、Hybrid 检索对比，Hybrid Hit@1 为 0.733。",
+      "boundary": "RRF 融合结果取决于当前候选召回和评测题。"
+    },
+    "hybrid_hit_at_3": {
+      "value": 0.9333333333333333,
+      "source": "eval_results/policy_retrieval_comparison.json",
+      "meaning": "Hybrid RRF 检索在当前政策检索评测集中 Top3 命中期望来源的比例。",
+      "resume_ready": true,
+      "recommended_resume_text": "Hybrid Top3 命中率为 0.933。",
+      "boundary": "仅代表当前政策检索评测集。"
+    },
+    "policy_qa_live_acceptance_passed": {
+      "value": 6,
+      "total": 6,
+      "source": "eval_results/policy_qa_live_acceptance.json",
+      "meaning": "真实 DeepSeek 调用下固定政策问答验收用例通过数。",
+      "resume_ready": true,
+      "recommended_resume_text": "完成 6/6 条真实 LLM 政策问答验收，覆盖 JSON 输出、引用校验、订单边界和无关问题拦截。",
+      "boundary": "仅代表固定 live acceptance 用例，不代表开放域泛化能力。"
+    },
+    "agent_controlled_eval_total": {
+      "value": 24,
+      "source": "eval_results/after_sales_agent_eval_summary.json",
+      "meaning": "受控 Agent 评测题数量。",
+      "resume_ready": true,
+      "recommended_resume_text": "设计 24 条受控 Agent 评测任务。",
+      "boundary": "受控评测集覆盖项目定义的核心售后意图。"
+    },
+    "intent_accuracy": {
+      "value": 1.0,
+      "source": "eval_results/after_sales_agent_eval_summary.json",
+      "meaning": "受控评测集中意图识别准确率。",
+      "resume_ready": true,
+      "recommended_resume_text": "24 条受控 Agent 评测任务中，意图识别准确率为 1.0。",
+      "boundary": "不代表开放用户输入的真实线上准确率。"
+    },
+    "tool_selection_accuracy": {
+      "value": 1.0,
+      "source": "eval_results/after_sales_agent_eval_summary.json",
+      "meaning": "受控评测集中工具选择准确率。",
+      "resume_ready": true,
+      "recommended_resume_text": "工具选择准确率为 1.0。",
+      "boundary": "仅代表当前工具集和受控评测题。"
+    },
+    "order_id_extraction_accuracy": {
+      "value": 1.0,
+      "source": "eval_results/after_sales_agent_eval_summary.json",
+      "meaning": "受控评测集中订单号抽取准确率。",
+      "resume_ready": true,
+      "recommended_resume_text": "订单号提取准确率为 1.0。",
+      "boundary": "订单号均为模拟格式。"
+    },
+    "missing_order_id_handling_accuracy": {
+      "value": 1.0,
+      "source": "eval_results/after_sales_agent_eval_summary.json",
+      "meaning": "缺少订单号场景处理准确率。",
+      "resume_ready": true,
+      "recommended_resume_text": "缺少订单号处理准确率为 1.0。",
+      "boundary": "仅代表当前定义的缺参场景。"
+    },
+    "ticket_confirmation_safety_accuracy": {
+      "value": 1.0,
+      "source": "eval_results/after_sales_agent_eval_summary.json",
+      "meaning": "工单创建显式确认安全门控准确率。",
+      "resume_ready": true,
+      "recommended_resume_text": "工单创建显式确认安全门控准确率为 1.0。",
+      "boundary": "创建的是模拟工单，不执行真实售后动作。"
+    },
+    "api_acceptance_scenario_count": {
+      "value": 8,
+      "source": "eval_results/agent_api_acceptance.json",
+      "meaning": "API 验收脚本覆盖的本地请求场景数量，包含 /health。",
+      "resume_ready": true,
+      "recommended_resume_text": "完成 8 个本地 API 验收场景。",
+      "boundary": "本地单进程验收，不代表生产压测。"
+    },
+    "stability_sequential_total": {
+      "value": 12,
+      "passed": 12,
+      "source": "eval_results/stability_test_summary.json",
+      "meaning": "顺序稳定性调用总数与通过数。",
+      "resume_ready": true,
+      "recommended_resume_text": "顺序稳定性测试 12/12 通过。",
+      "boundary": "本地稳定性检查，不代表分布式稳定性。"
+    },
+    "concurrency_basic": {
+      "total": 5,
+      "http_200_count": 4,
+      "agent_busy_503_count": 1,
+      "unexpected_failure_count": 0,
+      "source": "eval_results/stability_test_summary.json",
+      "meaning": "基础并发测试中成功、agent_busy 和非预期失败数量。",
+      "resume_ready": true,
+      "recommended_resume_text": "基础并发测试 5 次请求中 4 次成功、1 次触发 agent_busy 保护、0 次非预期失败。",
+      "boundary": "进程内基础并发保护，不代表生产级限流。"
+    },
+    "unexpected_5xx_count": {
+      "value": 0,
+      "source": "eval_results/stability_test_summary.json",
+      "meaning": "稳定性测试中的非预期错误数量。",
+      "resume_ready": true,
+      "recommended_resume_text": "稳定性测试未出现非预期错误。",
+      "boundary": "本地测试口径。"
+    },
+    "pytest_passed_count": {
+      "value": 87,
+      "source": "python -m pytest -q terminal output on 2026-06-23",
+      "meaning": "pytest 通过用例数。",
+      "resume_ready": true,
+      "recommended_resume_text": "本地 pytest 回归 87 条用例通过。",
+      "boundary": "来自本次终端输出，不是结构化 pytest 报告文件。"
+    },
+    "pytest_warning_count": {
+      "value": 1,
+      "source": "python -m pytest -q terminal output on 2026-06-23",
+      "meaning": "pytest warning 数量。",
+      "resume_ready": true,
+      "recommended_resume_text": "本地 pytest 回归 87 passed / 1 warning。",
+      "boundary": "warning 来自 FastAPI TestClient 依赖的 StarletteDeprecationWarning。"
+    },
+    "full_regression_passed": {
+      "value": true,
+      "source": "eval_results/full_check_summary.json",
+      "meaning": "全量回归脚本是否通过。",
+      "resume_ready": true,
+      "recommended_resume_text": "全量回归验收通过，覆盖初始化、索引构建、pytest、API 验收和稳定性测试。",
+      "boundary": "以当前 run_full_checks.py 定义的本地回归范围为准。"
+    },
+    "docker_verification_status": {
+      "value": "未验证",
+      "source": "docker --version command output on 2026-06-23",
+      "meaning": "当前环境 Docker 实际验证状态。",
+      "resume_ready": false,
+      "recommended_resume_text": "Docker 部署验证待补充。",
+      "boundary": "当前环境未识别 docker 命令。"
+    },
+    "docker_unverified_reason": {
+      "value": "当前 PowerShell 环境中 docker 命令不可用。",
+      "source": "docker --version command output on 2026-06-23",
+      "meaning": "Docker 未验证原因。",
+      "resume_ready": false,
+      "recommended_resume_text": "待安装并启动 Docker Desktop 后再补充。",
+      "boundary": "未执行镜像构建或容器 /health 验证。"
+    }
+  }
+}

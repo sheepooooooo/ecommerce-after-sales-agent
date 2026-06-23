@@ -1,0 +1,24 @@
+{"id":"agent_eval_001","query":"耳机保修多久？","expected":{"intent":"policy_qa","tool_used":"policy_qa_tool.ask_policy_question","order_id":null,"answer_status":"answered"}}
+{"id":"agent_eval_002","query":"退货后优惠券会退回来吗？","expected":{"intent":"policy_qa","tool_used":"policy_qa_tool.ask_policy_question","order_id":null,"answer_status":"answered"}}
+{"id":"agent_eval_003","query":"支付成功但订单还显示待付款怎么办？","expected":{"intent":"policy_qa","tool_used":"policy_qa_tool.ask_policy_question","order_id":null,"answer_status":"answered"}}
+{"id":"agent_eval_004","query":"ORD10003 现在是什么状态？","expected":{"intent":"order_lookup","tool_used":"order_tool.get_order","order_id":"ORD10003","answer_status":"answered"}}
+{"id":"agent_eval_005","query":"帮我查一下 ORD10012 的物流状态。","expected":{"intent":"order_lookup","tool_used":"order_tool.get_order","order_id":"ORD10012","answer_status":"answered"}}
+{"id":"agent_eval_006","query":"ord10003 的物流怎么样？","expected":{"intent":"order_lookup","tool_used":"order_tool.get_order","order_id":"ORD10003","answer_status":"answered"}}
+{"id":"agent_eval_007","query":"ORD10004 可以退款吗？","expected":{"intent":"refund_eligibility","tool_used":"refund_eligibility_tool.check_refund_eligibility","order_id":"ORD10004","answer_status":"answered"}}
+{"id":"agent_eval_008","query":"ORD10007 能换货吗？","expected":{"intent":"refund_eligibility","tool_used":"refund_eligibility_tool.check_refund_eligibility","order_id":"ORD10007","answer_status":"answered"}}
+{"id":"agent_eval_009","query":"ORD99999 可以退款吗？","expected":{"intent":"refund_eligibility","tool_used":"refund_eligibility_tool.check_refund_eligibility","order_id":"ORD99999","answer_status":"manual_review"}}
+{"id":"agent_eval_010","query":"我想退款。","expected":{"intent":"refund_eligibility","tool_used":null,"order_id":null,"answer_status":"missing_order_id"}}
+{"id":"agent_eval_011","query":"帮我查一下我的物流。","expected":{"intent":"order_lookup","tool_used":null,"order_id":null,"answer_status":"missing_order_id"}}
+{"id":"agent_eval_012","query":"请帮我创建售后工单，订单号是 ORD10003。","expected":{"intent":"create_ticket","tool_used":null,"order_id":"ORD10003","answer_status":"ticket_confirmation_required"}}
+{"id":"agent_eval_013","query":"请帮我创建售后工单，订单号是 ORD10003。并确认创建。","confirm_ticket_creation":true,"expected":{"intent":"create_ticket","tool_used":"order_tool.create_ticket","order_id":"ORD10003","answer_status":"answered"}}
+{"id":"agent_eval_014","query":"我要提交投诉工单，订单号是 ORD10004。","expected":{"intent":"create_ticket","tool_used":null,"order_id":"ORD10004","answer_status":"ticket_confirmation_required"}}
+{"id":"agent_eval_015","query":"我的银行卡被重复扣款了。","expected":{"intent":"human_handoff","tool_used":null,"order_id":null,"answer_status":"manual_review"}}
+{"id":"agent_eval_016","query":"我怀疑账号被盗了。","expected":{"intent":"human_handoff","tool_used":null,"order_id":null,"answer_status":"manual_review"}}
+{"id":"agent_eval_017","query":"你们泄露我的隐私，我要投诉。","expected":{"intent":"human_handoff","tool_used":null,"order_id":null,"answer_status":"manual_review"}}
+{"id":"agent_eval_018","query":"今天天气怎么样？","expected":{"intent":"unknown","tool_used":null,"order_id":null,"answer_status":"unknown_request"}}
+{"id":"agent_eval_019","query":"给我写一首诗。","expected":{"intent":"unknown","tool_used":null,"order_id":null,"answer_status":"unknown_request"}}
+{"id":"agent_eval_020","query":"Ord10005 可以退货吗？","expected":{"intent":"refund_eligibility","tool_used":"refund_eligibility_tool.check_refund_eligibility","order_id":"ORD10005","answer_status":"answered"}}
+{"id":"agent_eval_021","query":"比较 ORD10003 和 ORD10004 的状态。","expected":{"intent":"order_lookup","tool_used":"order_tool.get_order","order_id":"ORD10003","answer_status":"answered"}}
+{"id":"agent_eval_022","query":"发票怎么开？","expected":{"intent":"policy_qa","tool_used":"policy_qa_tool.ask_policy_question","order_id":null,"answer_status":"answered"}}
+{"id":"agent_eval_023","query":"积分会过期吗？","expected":{"intent":"policy_qa","tool_used":"policy_qa_tool.ask_policy_question","order_id":null,"answer_status":"answered"}}
+{"id":"agent_eval_024","query":"请创建工单。","expected":{"intent":"create_ticket","tool_used":null,"order_id":null,"answer_status":"ticket_confirmation_required"}}

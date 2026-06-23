@@ -1,0 +1,12 @@
+pytest
+rank-bm25
+jieba
+sentence-transformers
+faiss-cpu
+numpy
+openai
+python-dotenv
+pydantic
+langgraph
+fastapi
+uvicorn

@@ -1,0 +1,80 @@
+{
+  "generated_at": "2026-06-23T13:09:59",
+  "base_url": "http://127.0.0.1:8011",
+  "notes": [
+    "所有订单号均为模拟订单。",
+    "请求样例不包含 API Key。",
+    "工单创建必须显式区分 confirm_ticket_creation=false 与 true。"
+  ],
+  "requests": [
+    {
+      "name": "健康检查",
+      "method": "GET",
+      "path": "/health",
+      "body": null
+    },
+    {
+      "name": "ORD10003 现在是什么状态？",
+      "method": "POST",
+      "path": "/agent/run",
+      "body": {
+        "user_query": "ORD10003 现在是什么状态？",
+        "confirm_ticket_creation": false
+      }
+    },
+    {
+      "name": "ORD10004 可以退款吗？",
+      "method": "POST",
+      "path": "/agent/run",
+      "body": {
+        "user_query": "ORD10004 可以退款吗？",
+        "confirm_ticket_creation": false
+      }
+    },
+    {
+      "name": "我想退款",
+      "method": "POST",
+      "path": "/agent/run",
+      "body": {
+        "user_query": "我想退款",
+        "confirm_ticket_creation": false
+      }
+    },
+    {
+      "name": "创建工单但不确认",
+      "method": "POST",
+      "path": "/agent/run",
+      "body": {
+        "user_query": "请创建工单，订单号是 ORD10003",
+        "confirm_ticket_creation": false
+      }
+    },
+    {
+      "name": "创建工单并确认",
+      "method": "POST",
+      "path": "/agent/run",
+      "body": {
+        "user_query": "请创建工单，订单号是 ORD10003",
+        "confirm_ticket_creation": true
+      }
+    },
+    {
+      "name": "我的银行卡被重复扣款了",
+      "method": "POST",
+      "path": "/agent/run",
+      "body": {
+        "user_query": "我的银行卡被重复扣款了",
+        "confirm_ticket_creation": false
+      }
+    },
+    {
+      "name": "耳机保修多久？",
+      "method": "POST",
+      "path": "/agent/run",
+      "body": {
+        "user_query": "耳机保修多久？",
+        "confirm_ticket_creation": false
+      }
+    }
+  ]
+}

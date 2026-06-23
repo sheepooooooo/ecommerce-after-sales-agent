@@ -1,0 +1,166 @@
+{
+  "checked_at": "2026-06-23T13:36:47",
+  "env_exists": true,
+  "tracked_file_count": 0,
+  "local_only_safe": [
+    {
+      "path": ".env",
+      "description": "本地真实环境变量文件",
+      "ignored_by_gitignore": true,
+      "tracked_files": [],
+      "recommendation": "可保留在本地；已被 .gitignore 覆盖且未被 Git 跟踪。"
+    },
+    {
+      "path": "logs/agent_api.log",
+      "description": "本地运行日志",
+      "ignored_by_gitignore": true,
+      "tracked_files": [],
+      "recommendation": "可保留在本地；已被 .gitignore 覆盖且未被 Git 跟踪。"
+    },
+    {
+      "path": "data/orders.db",
+      "description": "本地 SQLite 模拟订单数据库",
+      "ignored_by_gitignore": true,
+      "tracked_files": [],
+      "recommendation": "可保留在本地；已被 .gitignore 覆盖且未被 Git 跟踪。"
+    },
+    {
+      "path": "data/indexes",
+      "description": "本地政策 chunk / FAISS 索引",
+      "ignored_by_gitignore": true,
+      "tracked_files": [],
+      "recommendation": "可保留在本地；已被 .gitignore 覆盖且未被 Git 跟踪。"
+    },
+    {
+      "path": "eval_results",
+      "description": "本地评测结果",
+      "ignored_by_gitignore": true,
+      "tracked_files": [],
+      "recommendation": "可保留在本地；已被 .gitignore 覆盖且未被 Git 跟踪。"
+    },
+    {
+      "path": ".pytest_cache",
+      "description": "pytest 本地缓存",
+      "ignored_by_gitignore": true,
+      "tracked_files": [],
+      "recommendation": "可保留在本地；已被 .gitignore 覆盖且未被 Git 跟踪。"
+    },
+    {
+      "path": "app/__pycache__",
+      "description": "Python 字节码缓存",
+      "ignored_by_gitignore": true,
+      "tracked_files": [],
+      "recommendation": "可保留在本地；已被 .gitignore 覆盖且未被 Git 跟踪。"
+    },
+    {
+      "path": "app/agent/__pycache__",
+      "description": "Python 字节码缓存",
+      "ignored_by_gitignore": true,
+      "tracked_files": [],
+      "recommendation": "可保留在本地；已被 .gitignore 覆盖且未被 Git 跟踪。"
+    },
+    {
+      "path": "app/api/__pycache__",
+      "description": "Python 字节码缓存",
+      "ignored_by_gitignore": true,
+      "tracked_files": [],
+      "recommendation": "可保留在本地；已被 .gitignore 覆盖且未被 Git 跟踪。"
+    },
+    {
+      "path": "app/llm/__pycache__",
+      "description": "Python 字节码缓存",
+      "ignored_by_gitignore": true,
+      "tracked_files": [],
+      "recommendation": "可保留在本地；已被 .gitignore 覆盖且未被 Git 跟踪。"
+    },
+    {
+      "path": "app/observability/__pycache__",
+      "description": "Python 字节码缓存",
+      "ignored_by_gitignore": true,
+      "tracked_files": [],
+      "recommendation": "可保留在本地；已被 .gitignore 覆盖且未被 Git 跟踪。"
+    },
+    {
+      "path": "app/retrieval/__pycache__",
+      "description": "Python 字节码缓存",
+      "ignored_by_gitignore": true,
+      "tracked_files": [],
+      "recommendation": "可保留在本地；已被 .gitignore 覆盖且未被 Git 跟踪。"
+    },
+    {
+      "path": "app/schemas/__pycache__",
+      "description": "Python 字节码缓存",
+      "ignored_by_gitignore": true,
+      "tracked_files": [],
+      "recommendation": "可保留在本地；已被 .gitignore 覆盖且未被 Git 跟踪。"
+    },
+    {
+      "path": "app/services/__pycache__",
+      "description": "Python 字节码缓存",
+      "ignored_by_gitignore": true,
+      "tracked_files": [],
+      "recommendation": "可保留在本地；已被 .gitignore 覆盖且未被 Git 跟踪。"
+    },
+    {
+      "path": "app/tools/__pycache__",
+      "description": "Python 字节码缓存",
+      "ignored_by_gitignore": true,
+      "tracked_files": [],
+      "recommendation": "可保留在本地；已被 .gitignore 覆盖且未被 Git 跟踪。"
+    },
+    {
+      "path": "scripts/__pycache__",
+      "description": "Python 字节码缓存",
+      "ignored_by_gitignore": true,
+      "tracked_files": [],
+      "recommendation": "可保留在本地；已被 .gitignore 覆盖且未被 Git 跟踪。"
+    },
+    {
+      "path": "tests/__pycache__",
+      "description": "Python 字节码缓存",
+      "ignored_by_gitignore": true,
+      "tracked_files": [],
+      "recommendation": "可保留在本地；已被 .gitignore 覆盖且未被 Git 跟踪。"
+    }
+  ],
+  "tracked_risk": [],
+  "ignore_rule_missing": [],
+  "possible_secret_findings": [],
+  "log_files": [
+    "logs\\agent_api.log"
+  ],
+  "pycache_directories": [
+    "app\\__pycache__",
+    "app\\agent\\__pycache__",
+    "app\\api\\__pycache__",
+    "app\\llm\\__pycache__",
+    "app\\observability\\__pycache__",
+    "app\\retrieval\\__pycache__",
+    "app\\schemas\\__pycache__",
+    "app\\services\\__pycache__",
+    "app\\tools\\__pycache__",
+    "scripts\\__pycache__",
+    "tests\\__pycache__"
+  ],
+  "eval_results_sensitive_findings": [],
+  "orders_db_exists": true,
+  "policy_faiss_index_exists": true,
+  "large_files": [],
+  "gitignore_coverage": {
+    "!.env.example": true,
+    "*.pyc": true,
+    ".env": true,
+    ".env.*": true,
+    ".pytest_cache/": true,
+    ".venv/": true,
+    "__pycache__/": true,
+    "data/indexes/": true,
+    "data/orders.db": true,
+    "eval_results/": true,
+    "logs/*.log": true,
+    "venv/": true
+  },
+  "risk_items": [],
+  "passed": true,
+  "boundary": "本脚本只检查，不删除文件、不读取 .env 内容、不执行 GitHub 操作。"
+}

@@ -1,0 +1,19 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python cache
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# Local runtime artifacts
+logs/*.log
+data/orders.db
+data/indexes/
+eval_results/
+
+# Local environment
+.venv/
+venv/

@@ -1,0 +1,208 @@
+{
+  "checked_at": "2026-06-23T13:06:12",
+  "rag_project_path": "C:\\Users\\16793\\Desktop\\all-in-rag\\code\\C1",
+  "path_exists": true,
+  "eval_files": [
+    "agent_eval_questions.jsonl",
+    "agent_planner_eval_questions.jsonl",
+    "eval_questions.jsonl",
+    "eval_questions_30_template.jsonl",
+    "eval_questions_annotated.example.jsonl",
+    "eval_questions_auto_candidate.jsonl",
+    "eval_results\\agent_eval_details.jsonl",
+    "eval_results\\agent_planner_eval_details.jsonl",
+    "eval_results\\eval_questions_20260615_222929_700564_rag_eval_details.jsonl",
+    "eval_results\\eval_questions_20260615_224139_678497_rag_eval_details.jsonl",
+    "eval_results\\eval_questions_20260615_225656_247059_rag_eval_details.jsonl",
+    "eval_results\\eval_questions_20260616_002222_688101_rag_eval_details.jsonl",
+    "eval_results\\eval_questions_20260616_004156_449115_rag_eval_details.jsonl",
+    "eval_results\\eval_questions_20260616_131402_512389_rag_eval_details.jsonl",
+    "eval_results\\langgraph_agent_eval_details.jsonl",
+    "eval_results\\rag_eval_details.jsonl",
+    "eval_results\\retrieval_experiments\\retrieval_experiment_details_20260615_225819_797054.jsonl",
+    "eval_results\\retrieval_experiments\\retrieval_experiment_details_20260616_002348_984105.jsonl",
+    "eval_results\\retrieval_experiments\\retrieval_experiment_details_20260616_004324_386457.jsonl",
+    "eval_results\\retrieval_experiments\\retrieval_experiment_details_20260616_131554_167876.jsonl",
+    "eval_results\\retrieval_experiments\\retrieval_experiment_details_latest.jsonl"
+  ],
+  "annotation_report": {
+    "total_checked_lines": 449,
+    "total_annotated_lines": 0,
+    "discovered_annotation_fields": [],
+    "details": [
+      {
+        "file": "agent_eval_questions.jsonl",
+        "checked_lines": 20,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "agent_planner_eval_questions.jsonl",
+        "checked_lines": 8,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_questions.jsonl",
+        "checked_lines": 10,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_questions_30_template.jsonl",
+        "checked_lines": 30,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_questions_annotated.example.jsonl",
+        "checked_lines": 3,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_questions_auto_candidate.jsonl",
+        "checked_lines": 10,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_results\\agent_eval_details.jsonl",
+        "checked_lines": 20,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_results\\agent_planner_eval_details.jsonl",
+        "checked_lines": 8,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_results\\eval_questions_20260615_222929_700564_rag_eval_details.jsonl",
+        "checked_lines": 10,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_results\\eval_questions_20260615_224139_678497_rag_eval_details.jsonl",
+        "checked_lines": 10,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_results\\eval_questions_20260615_225656_247059_rag_eval_details.jsonl",
+        "checked_lines": 10,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_results\\eval_questions_20260616_002222_688101_rag_eval_details.jsonl",
+        "checked_lines": 10,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_results\\eval_questions_20260616_004156_449115_rag_eval_details.jsonl",
+        "checked_lines": 10,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_results\\eval_questions_20260616_131402_512389_rag_eval_details.jsonl",
+        "checked_lines": 10,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_results\\langgraph_agent_eval_details.jsonl",
+        "checked_lines": 20,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_results\\rag_eval_details.jsonl",
+        "checked_lines": 10,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_results\\retrieval_experiments\\retrieval_experiment_details_20260615_225819_797054.jsonl",
+        "checked_lines": 50,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_results\\retrieval_experiments\\retrieval_experiment_details_20260616_002348_984105.jsonl",
+        "checked_lines": 50,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_results\\retrieval_experiments\\retrieval_experiment_details_20260616_004324_386457.jsonl",
+        "checked_lines": 50,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_results\\retrieval_experiments\\retrieval_experiment_details_20260616_131554_167876.jsonl",
+        "checked_lines": 50,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      },
+      {
+        "file": "eval_results\\retrieval_experiments\\retrieval_experiment_details_latest.jsonl",
+        "checked_lines": 50,
+        "annotated_lines": 0,
+        "discovered_fields": [],
+        "read_error": null
+      }
+    ]
+  },
+  "retrieval_result_or_experiment_files": [],
+  "evaluation_scripts": [
+    "eval_annotation_helper.py",
+    "evaluate_agent.py",
+    "evaluate_agent_planner.py",
+    "evaluate_langgraph_agent.py",
+    "evaluate_rag.py",
+    "retrieval_experiment.py"
+  ],
+  "log_or_latency_files": [
+    "logs\\app.log"
+  ],
+  "can_compute_hit_recall_mrr": false,
+  "missing_items": [
+    "未确认评测题包含 source/file/page/chunk 等人工标注。",
+    "未发现检索结果或实验结果文件。"
+  ],
+  "next_steps": [
+    "可优先检查并运行：python eval_annotation_helper.py",
+    "可优先检查并运行：python evaluate_agent.py",
+    "可优先检查并运行：python evaluate_agent_planner.py",
+    "可优先检查并运行：python evaluate_langgraph_agent.py",
+    "可优先检查并运行：python evaluate_rag.py",
+    "可优先检查并运行：python retrieval_experiment.py"
+  ],
+  "calculation_boundary": "只有存在人工标注的相关 source/file/page/chunk，并能与检索结果逐题对齐时，才能真实计算 Hit@K、Recall@K、MRR。"
+}
