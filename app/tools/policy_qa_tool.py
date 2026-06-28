@@ -28,6 +28,7 @@ if str(PROJECT_ROOT_FOR_IMPORTS) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT_FOR_IMPORTS))
 
 from app.services.policy_qa_service import answer_policy_question
+from app.services.error_taxonomy import classify_exception
 
 
 def ask_policy_question(
@@ -69,7 +70,7 @@ def ask_policy_question(
             "grounding_verification": {"passed": False, "reason": "未处理异常已被 Tool 捕获。"},
             "message": "政策问答失败。",
             "error": str(error),
-            "debug": {"llm_called": False},
+            "debug": {"llm_called": False, "error_category": classify_exception(error), "retry_count": 0},
         }
 
 

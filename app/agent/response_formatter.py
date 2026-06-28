@@ -22,6 +22,7 @@ from typing import Any
 
 from app.schemas.after_sales_agent_schema import AfterSalesAgentResponse
 from app.observability.trace_utils import summarize_tool_latency
+from app.services.error_taxonomy import business_error_category_from_response
 
 
 PAYMENT_STATUS_TEXT = {
@@ -177,7 +178,10 @@ def format_agent_response(state: dict[str, Any]) -> dict[str, Any]:
     if answer_status == "missing_order_id":
         data = {"required_format": "ORD10003"}
     elif answer_status == "ticket_confirmation_required":
-        data = {"order_id": state.get("order_id"), "confirm_ticket_creation": False}
+        data = _dump_model_if_needed(state.get("data")) if state.get("data") else {
+            "order_id": state.get("order_id"),
+            "confirm_ticket_creation": False,
+        }
     elif intent == "policy_qa" and state.get("policy_qa_result"):
         policy_result = state["policy_qa_result"]
         answer = answer or policy_result.get("answer", "")
@@ -196,6 +200,10 @@ def format_agent_response(state: dict[str, Any]) -> dict[str, Any]:
         )
     elif intent == "refund_eligibility":
         answer, data, needs_human_review, answer_status = _format_refund_answer(state.get("refund_result"))
+    elif intent == "refund_then_ticket_if_ineligible":
+        data = _dump_model_if_needed(state.get("data", {}))
+        answer = answer or "复合售后流程已执行。"
+        needs_human_review = bool(state.get("needs_human_review", False))
     elif intent == "create_ticket" and state.get("ticket_result"):
         ticket = state["ticket_result"]
         data = {"ticket": ticket}
@@ -203,10 +211,21 @@ def format_agent_response(state: dict[str, Any]) -> dict[str, Any]:
             f"已创建模拟售后工单，工单编号为 {ticket.get('ticket_id')}。"
             "当前仅写入本地模拟数据库，不代表真实客服系统已受理。"
         )
+    elif state.get("data"):
+        data = _dump_model_if_needed(state.get("data"))
     success = answer_status not in {"tool_error"}
+    debug = _dump_model_if_needed(state.get("debug", {}))
+    provisional = {
+        "answer_status": answer_status,
+        "intent": intent,
+        "tool_used": state.get("tool_used"),
+        "answer": answer,
+        "debug": debug,
+    }
     response = AfterSalesAgentResponse(
         success=success,
         request_id=state.get("request_id", ""),
+        session_id=state.get("session_id", ""),
         user_query=state.get("user_query", ""),
         intent=intent,
         intent_reason=state.get("intent_reason", ""),
@@ -220,7 +239,17 @@ def format_agent_response(state: dict[str, Any]) -> dict[str, Any]:
         tool_trace=_dump_model_if_needed(state.get("tool_trace", [])),
         tool_latency_summary=summarize_tool_latency(state.get("tool_trace", [])),
         error=state.get("error"),
-        debug=_dump_model_if_needed(state.get("debug", {})),
+        error_category=state.get("error_category") or business_error_category_from_response(provisional),
+        retry_count=int(state.get("retry_count") or debug.get("retry_count") or 0),
+        degraded=bool(state.get("degraded", False)),
+        fallback_action=state.get("fallback_action"),
+        workflow_summary=_dump_model_if_needed(
+            state.get("workflow_summary")
+            or data.get("workflow_summary")
+            if isinstance(data, dict)
+            else None
+        ),
+        debug=debug,
     )
     return response.model_dump()
 

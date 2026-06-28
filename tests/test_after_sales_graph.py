@@ -70,3 +70,24 @@ def test_graph_tool_exception_returns_tool_error(monkeypatch: Any) -> None:
     assert result["answer_status"] == "tool_error"
     assert result["success"] is False
     assert result["error"] == "boom"
+
+
+def test_create_ticket_failure_is_not_retried(monkeypatch: Any) -> None:
+    initialize_database()
+    state = {"count": 0}
+
+    def broken_create_ticket(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        state["count"] += 1
+        raise RuntimeError("write failed")
+
+    monkeypatch.setattr(after_sales_graph, "create_ticket", broken_create_ticket)
+
+    result = run_after_sales_agent(
+        "请帮我创建工单，订单号 ORD10003",
+        confirm_ticket_creation=True,
+        policy_qa_callable=policy_stub,
+    )
+
+    assert result["answer_status"] == "tool_error"
+    assert result["success"] is False
+    assert state["count"] == 1

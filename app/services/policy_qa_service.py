@@ -34,6 +34,9 @@ from app.schemas.policy_qa_schema import (
     PolicyQAResponse,
 )
 from app.services.citation_grounding_verifier import verify_policy_citations
+from app.services.error_taxonomy import ErrorCategory, classify_exception, is_retryable_category
+from app.services.retry_policy import RetryExhaustedError, execute_with_retry
+from app.services.trace_store import sanitize_value
 from app.tools.policy_retrieval_tool import retrieve_policy
 
 
@@ -202,6 +205,8 @@ def normalize_llm_output(generator_output: Any) -> tuple[dict[str, Any], float, 
 def call_generator_with_repair(
     messages: list[dict[str, str]],
     llm_generator: Callable[[list[dict[str, str]]], Any],
+    sleep_func: Callable[[float], None] | None = None,
+    retry_config: dict[str, Any] | None = None,
 ) -> tuple[PolicyGenerationResult | None, dict[str, Any], str | None]:
     """
     调用模型，并在格式错误时最多进行一次修复重试。
@@ -220,6 +225,9 @@ def call_generator_with_repair(
         "generation_attempt_count": 0,
         "used_repair": False,
         "generation_latency_ms": 0.0,
+        "retry_count": 0,
+        "retry_trace_events": [],
+        "error_category": None,
     }
     raw_output_for_repair = ""
 
@@ -229,21 +237,64 @@ def call_generator_with_repair(
             current_messages = messages if attempt_index == 0 else build_repair_messages(raw_output_for_repair)
             if attempt_index == 1:
                 debug_info["used_repair"] = True
-            generator_output = llm_generator(current_messages)
+            generator_output, retry_debug = execute_with_retry(
+                "policy_qa_tool.ask_policy_question",
+                lambda: llm_generator(current_messages),
+                sleep_func=sleep_func,
+                retry_config=retry_config,
+            )
+            debug_info["retry_count"] += retry_debug["retry_count"]
+            debug_info["retry_trace_events"].extend(retry_debug["trace_events"])
             parsed_dict, latency_ms, raw_text = normalize_llm_output(generator_output)
             raw_output_for_repair = raw_text
             debug_info["generation_latency_ms"] += latency_ms
             return PolicyGenerationResult.model_validate(parsed_dict), debug_info, None
         except (json.JSONDecodeError, ValueError, ValidationError) as error:
+            debug_info["error_category"] = ErrorCategory.NON_RETRYABLE_SCHEMA_ERROR.value
             raw_output_for_repair = raw_output_for_repair or str(error)
             if attempt_index == 1:
                 return None, debug_info, f"模型输出无法解析为指定 JSON 结构：{error}"
+        except RetryExhaustedError as error:
+            debug_info["retry_count"] += error.retry_count
+            debug_info["retry_trace_events"].extend(error.trace_events)
+            debug_info["error_category"] = error.error_category
+            return None, debug_info, str(error)
         except Exception as error:
+            debug_info["error_category"] = classify_exception(error)
+            if not is_retryable_category(debug_info["error_category"]):
+                return None, debug_info, f"模型生成失败：{error}"
             if attempt_index == 1:
                 return None, debug_info, f"模型生成失败：{error}"
             raw_output_for_repair = str(error)
 
     return None, debug_info, "模型生成失败。"
+
+
+def build_degraded_citations(retrieved_chunk_list: list[dict[str, Any]]) -> list[PolicyCitation]:
+    citations: list[PolicyCitation] = []
+    for chunk in retrieved_chunk_list[:3]:
+        citations.append(
+            PolicyCitation(
+                chunk_id=chunk["chunk_id"],
+                source_file=chunk["source_file"],
+                section_title=chunk["section_title"],
+            )
+        )
+    return citations
+
+
+def build_evidence_summary(retrieved_chunk_list: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    summary: list[dict[str, Any]] = []
+    for chunk in retrieved_chunk_list[:3]:
+        summary.append(
+            {
+                "chunk_id": chunk.get("chunk_id"),
+                "source_file": chunk.get("source_file"),
+                "section_title": chunk.get("section_title"),
+                "content_summary": sanitize_value(str(chunk.get("content", ""))[:180]),
+            }
+        )
+    return summary
 
 
 def build_citations(
@@ -285,6 +336,8 @@ def answer_policy_question(
     retrieval_mode: str = "bm25",
     top_k: int = DEFAULT_POLICY_TOP_K,
     llm_generator: Callable[[list[dict[str, str]]], Any] | None = None,
+    sleep_func: Callable[[float], None] | None = None,
+    retry_config: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """
     回答政策咨询问题。
@@ -335,7 +388,12 @@ def answer_policy_question(
             grounding_verification={"passed": False, "reason": "参数错误。"},
             message="参数错误。",
             error="top_k 必须是正整数。",
-            debug={"llm_called": False, "total_latency_ms": 0.0},
+            debug={
+                "llm_called": False,
+                "total_latency_ms": 0.0,
+                "error_category": ErrorCategory.INVALID_REQUEST.value,
+                "retry_count": 0,
+            },
         ).model_dump()
 
     if is_order_fact_question(query):
@@ -407,25 +465,45 @@ def answer_policy_question(
     generation_result, generation_debug, generation_error = call_generator_with_repair(
         messages=messages,
         llm_generator=actual_generator,
+        sleep_func=sleep_func,
+        retry_config=retry_config,
     )
 
     if generation_result is None:
+        error_category = generation_debug.get("error_category") or ErrorCategory.INTERNAL_ERROR.value
+        retry_trace_events = generation_debug.get("retry_trace_events", [])
+        fallback_trace_event = {
+            "step": "policy_qa_tool.ask_policy_question",
+            "action_type": "fallback",
+            "status": "degraded",
+            "latency_ms": 0,
+            "retry_count": generation_debug.get("retry_count", 0),
+            "error_category": error_category,
+            "fallback_action": "return_retrieved_policy_evidence",
+            "degraded": True,
+        }
+        citation_list = build_degraded_citations(retrieved_chunks)
         return PolicyQAResponse(
-            success=False,
+            success=True,
             query=query,
-            answer_status="generation_error",
-            answer="模型生成失败，暂时无法提供可靠政策回答。",
+            answer_status="degraded",
+            answer="当前政策回答服务暂时不可用，以下仅返回已检索到的模拟政策依据摘要；请稍后重试或转人工处理。",
             retrieval_mode=retrieval_mode,
             retrieved_chunks=retrieved_chunks,
-            citations=[],
+            citations=citation_list,
             has_relevant_policy=True,
             generation=None,
-            grounding_verification={"passed": False, "reason": "生成失败，未进入引用校验。"},
-            message="模型生成失败。",
+            grounding_verification={"passed": False, "reason": "生成失败，已降级为证据摘要。"},
+            message="模型生成失败，已安全降级。",
             error=generation_error,
             debug={
                 **generation_debug,
                 "llm_called": True,
+                "degraded": True,
+                "fallback_action": "return_retrieved_policy_evidence",
+                "error_category": error_category,
+                "evidence_summary": build_evidence_summary(retrieved_chunks),
+                "retry_trace_events": [*retry_trace_events, fallback_trace_event],
                 "retrieval_latency_ms": round(retrieval_latency_ms, 4),
                 "total_latency_ms": round((time.perf_counter() - service_start_time) * 1000, 4),
             },

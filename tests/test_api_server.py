@@ -157,3 +157,49 @@ def test_body_request_id_and_header_request_id() -> None:
     body = response.json()
     assert body["request_id"] == "body-id"
     assert response.headers["X-Request-ID"] == "body-id"
+
+
+def test_agent_trace_query_api_returns_sanitized_events() -> None:
+    initialize_database()
+    with make_client() as client:
+        run_response = client.post(
+            "/agent/run",
+            json={"user_query": "ORD10003 现在是什么状态？", "request_id": "api-trace-test"},
+        )
+        trace_response = client.get("/agent/traces/api-trace-test")
+
+    assert run_response.status_code == 200
+    assert trace_response.status_code == 200
+    body = trace_response.json()
+    assert body["request_id"] == "api-trace-test"
+    assert body["event_count"] >= 1
+    serialized = str(body["events"])
+    assert "ORD10003" not in serialized
+    assert "ORD***" in serialized
+
+
+def test_agent_trace_query_api_returns_404_when_missing() -> None:
+    initialize_database()
+    with make_client() as client:
+        response = client.get("/agent/traces/not-found-request")
+
+    assert response.status_code == 404
+
+
+def test_agent_api_idempotency_key_reuses_ticket() -> None:
+    initialize_database()
+    payload = {
+        "user_query": "请帮我创建工单，订单号 ORD10003",
+        "confirm_ticket_creation": True,
+        "idempotency_key": "api-idem-key",
+    }
+    with make_client() as client:
+        first = client.post("/agent/run", json=payload)
+        second = client.post("/agent/run", json=payload)
+
+    first_body = first.json()
+    second_body = second.json()
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert first_body["data"]["ticket"]["ticket_id"] == second_body["data"]["ticket"]["ticket_id"]
+    assert len(list_tickets("ORD10003")) == 1

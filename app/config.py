@@ -179,3 +179,17 @@ def get_api_config() -> dict[str, Any]:
             minimum=0.1,
         ),
     }
+
+
+def get_retry_config() -> dict[str, Any]:
+    """
+    读取只读外部调用的有限重试配置。
+
+    当前仅用于政策问答中的 LLM 调用，不用于创建工单、SQLite 写库或退款业务判断。
+    """
+    load_dotenv(PROJECT_ROOT / ".env")
+    return {
+        "max_retries": _parse_int_env("READ_ONLY_RETRY_MAX_RETRIES", 2, minimum=0),
+        "base_delay_seconds": _parse_float_env("READ_ONLY_RETRY_BASE_DELAY_SECONDS", 0.2, minimum=0),
+        "backoff_multiplier": _parse_float_env("READ_ONLY_RETRY_BACKOFF_MULTIPLIER", 2.0, minimum=1.0),
+    }

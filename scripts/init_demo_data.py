@@ -290,6 +290,9 @@ def initialize_database() -> Path:
         # 初始化脚本需要可以重复运行。
         # 每次先删除旧表，再重建表和写入固定数据，测试就不会受旧数据残留影响。
         database_cursor.execute("DROP TABLE IF EXISTS tickets")
+        database_cursor.execute("DROP TABLE IF EXISTS agent_trace_events")
+        database_cursor.execute("DROP TABLE IF EXISTS ticket_idempotency_records")
+        database_cursor.execute("DROP TABLE IF EXISTS conversation_sessions")
         database_cursor.execute("DROP TABLE IF EXISTS orders")
 
         database_cursor.execute(
@@ -319,6 +322,59 @@ def initialize_database() -> Path:
                 description TEXT NOT NULL,
                 ticket_status TEXT NOT NULL,
                 created_at TEXT NOT NULL
+            )
+            """
+        )
+
+        database_cursor.execute(
+            """
+            CREATE TABLE conversation_sessions (
+                session_id TEXT PRIMARY KEY,
+                pending_action TEXT,
+                pending_order_id TEXT,
+                pending_payload TEXT NOT NULL DEFAULT '{}',
+                conversation_status TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+
+        database_cursor.execute(
+            """
+            CREATE TABLE agent_trace_events (
+                event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                request_id TEXT NOT NULL,
+                session_id TEXT NOT NULL,
+                step_index INTEGER NOT NULL,
+                node_name TEXT NOT NULL,
+                action_type TEXT NOT NULL,
+                tool_name TEXT,
+                parameter_summary TEXT NOT NULL,
+                result_summary TEXT NOT NULL,
+                status TEXT NOT NULL,
+                latency_ms REAL NOT NULL DEFAULT 0,
+                error_category TEXT,
+                retry_count INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+        database_cursor.execute(
+            "CREATE INDEX idx_agent_trace_request_id ON agent_trace_events(request_id)"
+        )
+
+        database_cursor.execute(
+            """
+            CREATE TABLE ticket_idempotency_records (
+                idempotency_key TEXT PRIMARY KEY,
+                session_id TEXT NOT NULL,
+                action_type TEXT NOT NULL,
+                order_id TEXT,
+                ticket_id INTEGER,
+                status TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
             )
             """
         )

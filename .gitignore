@@ -9,10 +9,17 @@ __pycache__/
 *.pyc
 
 # Local runtime artifacts
+logs/
 logs/*.log
 data/orders.db
 data/indexes/
 eval_results/
+cache/
+.cache/
+
+# Local document rendering artifacts
+tmp_resume_render/
+tools/beautify_resume_docx.py
 
 # Local environment
 .venv/

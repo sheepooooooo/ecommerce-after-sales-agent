@@ -22,6 +22,15 @@ if str(PROJECT_ROOT_FOR_IMPORTS) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT_FOR_IMPORTS))
 
 from app.config import get_llm_config
+from app.services.error_taxonomy import ErrorCategory
+
+
+class LLMClientError(RuntimeError):
+    """LLM client error carrying a stable, non-secret category."""
+
+    def __init__(self, message: str, error_category: str) -> None:
+        super().__init__(message)
+        self.error_category = error_category
 
 
 def get_deepseek_client() -> OpenAI:
@@ -95,18 +104,31 @@ def generate_policy_answer(messages: list[dict[str, str]]) -> dict[str, Any]:
     try:
         response = client.chat.completions.create(**request_kwargs)
     except APITimeoutError as error:
-        raise RuntimeError("DeepSeek 调用超时，请检查网络或调大 LLM_TIMEOUT_SECONDS。") from error
+        raise LLMClientError(
+            "DeepSeek 调用超时，请检查网络或调大 LLM_TIMEOUT_SECONDS。",
+            ErrorCategory.LLM_TIMEOUT.value,
+        ) from error
     except APIConnectionError as error:
-        raise RuntimeError("DeepSeek 网络连接失败，请检查网络、代理或 base_url。") from error
+        raise LLMClientError(
+            "DeepSeek 网络连接失败，请检查网络、代理或 base_url。",
+            ErrorCategory.LLM_NETWORK_ERROR.value,
+        ) from error
     except APIStatusError as error:
-        raise RuntimeError(
+        category = (
+            ErrorCategory.LLM_RATE_LIMIT.value
+            if error.status_code in {429, 500, 502, 503, 504}
+            else ErrorCategory.LLM_CONFIGURATION_ERROR.value
+        )
+        raise LLMClientError(
             f"DeepSeek API 返回错误状态：{error.status_code}。"
-            "请检查 API Key、模型名称、账户状态、JSON Object 输出模式或 LLM_ENABLE_THINKING 参数兼容性。"
+            "请检查 API Key、模型名称、账户状态、JSON Object 输出模式或 LLM_ENABLE_THINKING 参数兼容性。",
+            category,
         ) from error
     except Exception as error:
-        raise RuntimeError(
+        raise LLMClientError(
             "DeepSeek 调用失败。可能原因包括 OpenAI SDK 版本或 DeepSeek 参数不兼容、模型不可用、"
-            f"网络异常或返回格式异常。请检查 LLM_ENABLE_THINKING、LLM_MODEL 和 SDK 版本。原始错误：{error}"
+            "网络异常或返回格式异常。请检查 LLM_ENABLE_THINKING、LLM_MODEL 和 SDK 版本。",
+            ErrorCategory.INTERNAL_ERROR.value,
         ) from error
 
     latency_ms = (time.perf_counter() - start_time) * 1000

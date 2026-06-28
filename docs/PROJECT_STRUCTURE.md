@@ -75,3 +75,4 @@ pytest 测试，覆盖检索、Policy QA、规则引擎、Tool、LangGraph Agent
 ## docs/
 
 设计说明、验收说明、badcase 分析、部署稳定性说明和面试材料。
+其中 `CONTROLLED_WORKFLOW_ORCHESTRATION.md` 说明受控复合工作流的固定状态流转、trace 事件和安全边界。

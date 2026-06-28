@@ -24,12 +24,12 @@ from collections.abc import Callable
 from typing import Any
 from uuid import uuid4
 
-from fastapi import Depends, FastAPI, Request, Response
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app.agent.after_sales_agent_service import run_after_sales_agent
-from app.api.api_schemas import AgentRunRequest, AgentRunResponse, HealthResponse
+from app.api.api_schemas import AgentRunRequest, AgentRunResponse, AgentTraceResponse, HealthResponse
 from app.api.dependencies import get_policy_qa_callable
 from app.api.exception_handlers import (
     build_error_response,
@@ -42,6 +42,7 @@ from app.observability.trace_utils import (
     compact_tool_trace_for_log,
     mask_order_id,
 )
+from app.services.trace_store import list_trace_events
 
 
 API_VERSION = "0.1.0"
@@ -128,6 +129,7 @@ def _build_safe_agent_log(
     return {
         "event": "agent_api_request",
         "request_id": response_body.get("request_id", getattr(request.state, "request_id", "unknown")),
+        "session_id": response_body.get("session_id"),
         "endpoint": request.url.path,
         "http_status": http_status,
         "intent": response_body.get("intent"),
@@ -136,6 +138,10 @@ def _build_safe_agent_log(
         "api_latency_ms": api_latency_ms,
         "agent_latency_ms": agent_latency_ms,
         "error_code": error_code,
+        "error_category": response_body.get("error_category"),
+        "retry_count": response_body.get("retry_count"),
+        "degraded": response_body.get("degraded"),
+        "fallback_action": response_body.get("fallback_action"),
         "query_length": len(response_body.get("user_query", "")),
         "masked_order_id": mask_order_id(first_order_id),
         "tool_trace": compact_tool_trace_for_log(response_body.get("tool_trace", [])),
@@ -198,6 +204,8 @@ async def run_agent_endpoint(
                     payload.confirm_ticket_creation,
                     request_id,
                     policy_qa_callable,
+                    payload.session_id,
+                    payload.idempotency_key,
                 ),
                 timeout=api_config["agent_request_timeout_seconds"],
             )
@@ -250,6 +258,21 @@ async def run_agent_endpoint(
         )
     finally:
         agent_semaphore.release()
+
+
+@app.get("/agent/traces/{request_id}", response_model=AgentTraceResponse)
+async def get_agent_trace(request_id: str) -> dict[str, Any]:
+    """
+    Read one sanitized execution trace by request_id.
+    """
+    events = list_trace_events(request_id)
+    if not events:
+        raise HTTPException(status_code=404, detail="未找到该 request_id 对应的执行轨迹。")
+    return {
+        "request_id": request_id,
+        "event_count": len(events),
+        "events": events,
+    }
 
 # ============================================================
 # 【阅读重点】

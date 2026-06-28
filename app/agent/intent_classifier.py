@@ -64,8 +64,25 @@ def classify_intent(user_query: str, order_id: str | None) -> dict:
             "requires_order_id": False,
         }
 
-    # 2. 明确要求创建或提交工单时，进入工单确认流程。
-    ticket_keywords = ["创建工单", "提交工单", "新建工单", "售后工单", "投诉工单"]
+    # 2. 受控复合流程：先判断退款资格，若不满足且用户明确要求，再进入工单确认。
+    # 高风险请求已在上一段优先转人工，这里只编排现有只读 Tool，不执行写库。
+    refund_intent_keywords = ["退款", "退货", "退钱", "能退", "可退", "退回", "换货"]
+    ticket_fallback_keywords = ["工单", "售后工单", "创建工单", "建工单", "提交工单", "转人工", "售后处理"]
+    fallback_condition_keywords = ["如果", "要是", "不能", "不行", "不符合", "不可以", "否则", "那就", "帮我"]
+    if (
+        _contains_any(normalized_query, refund_intent_keywords)
+        and _contains_any(normalized_query, ticket_fallback_keywords)
+        and _contains_any(normalized_query, fallback_condition_keywords)
+    ):
+        return {
+            "intent": "refund_then_ticket_if_ineligible",
+            "confidence": "rule_based",
+            "reason": "问题同时包含退款资格判断和明确的工单兜底诉求，进入受控复合流程。",
+            "requires_order_id": True,
+        }
+
+    # 3. 明确要求创建或提交工单时，进入工单确认流程。
+    ticket_keywords = ["创建工单", "提交工单", "新建工单", "售后工单", "投诉工单", "工单"]
     if _contains_any(normalized_query, ticket_keywords):
         return {
             "intent": "create_ticket",

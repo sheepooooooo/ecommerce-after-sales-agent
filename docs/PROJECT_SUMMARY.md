@@ -1,77 +1,55 @@
 # 项目总结
 
-## 项目背景与目标
+`ecommerce_after_sales_agent` 是一个面向 AI 应用 / Agent 岗位展示的本地模拟电商售后 Agent。它把政策问答、订单查询、退款资格判断、模拟工单创建、显式确认、幂等保护和 trace 观测整合到一个可测试的工程项目中。
 
-本项目是“基于 LangGraph 的电商售后客服 Agent（个人项目）”。目标是在模拟电商售后场景中，把 RAG 政策问答、订单查询、退款资格规则、模拟工单创建和人工处理建议整合成一个可服务化、可评测、可观测的单 Agent 业务系统。
+## 当前实现
 
-项目定位是面试展示级、工程化单 Agent 业务系统。它使用模拟电商政策、模拟订单和模拟工单数据，不代表真实电商平台，也不执行真实退款、真实取消订单或真实售后动作。
-
-## 核心业务能力
-
-- 政策咨询：基于模拟政策知识库进行检索，并在有相关政策时调用 Policy QA 生成带引用回答。
-- 订单查询：从本地 SQLite 模拟订单库查询订单事实，返回必要状态字段。
-- 退款资格判断：基于订单事实和确定性退款规则引擎输出结论。
-- 模拟工单创建：只有用户显式确认后，才写入本地模拟工单。
-- 高风险问题人工处理建议：账户安全、重复扣款、隐私投诉等问题不调用 LLM、不写数据库，返回人工处理提示。
+- RAG 政策问答：基于模拟政策文档检索，支持引用校验；真实 LLM 调用仅用于政策问答链路。
+- 订单查询：从本地 SQLite 查询模拟订单。
+- 退款资格：由确定性规则引擎判断，不交给 LLM 决定。
+- 工单创建：必须经过显式确认，支持 session 恢复和幂等保护。
+- 受控复合工作流：当前只支持 `refund_then_ticket_if_ineligible`。
+- FastAPI：提供 `/health`、`/agent/run`、`/agent/traces/{request_id}`。
+- 可观测性：记录 request_id、tool_trace、工具耗时、错误分类、retry/fallback 和脱敏持久化 trace。
+- 自动化验证：pytest、Agent 离线评测、API 验收、稳定性测试和 full checks。
 
 ## 技术栈
 
 - Agent 编排：LangGraph StateGraph
-- API 服务：FastAPI、Pydantic
-- RAG 检索：BM25、BGE Embedding、FAISS、Hybrid RRF
-- LLM：DeepSeek API，使用 OpenAI 兼容客户端
-- 数据存储：SQLite、本地 Markdown 政策文件、本地索引文件
-- 可观测性：request_id、工具调用轨迹、工具耗时、JSON Lines 结构化日志
-- 验证：pytest、离线评测、真实 Policy QA 验收、API 验收、稳定性测试、全量回归脚本
-- 容器化配置：Dockerfile
+- API：FastAPI、Pydantic
+- 检索：BM25、BGE Embedding、FAISS、Hybrid RRF
+- LLM：DeepSeek API，OpenAI 兼容客户端
+- 数据：SQLite、本地 Markdown 政策、本地索引文件
+- 测试与评测：pytest、JSONL 离线评测、PowerShell 运行脚本
 
-## 系统分层
+## 当前指标
 
-- `app/retrieval/`：政策加载、切块、BM25、向量检索和混合检索。
-- `app/services/`：退款规则引擎、Policy QA 服务、引用校验。
-- `app/tools/`：订单查询、工单创建、退款资格、政策问答 Tool。
-- `app/agent/`：实体提取、意图分类、LangGraph 工作流和响应格式化。
-- `app/api/` 与 `app/api_server.py`：HTTP 请求校验、依赖注入、错误处理和 API 入口。
-- `app/observability/`：日志配置、脱敏和工具耗时统计。
-- `scripts/`：初始化、构建索引、演示、评测、验收和稳定性测试。
-- `tests/`：单元测试和 API 测试。
+当前受控离线 Agent 评测集共 71 条，端到端通过 69 条。
 
-## 真实完成度
+| 指标 | 通过数 / 适用总数 | 比率 |
+|---|---:|---:|
+| intent_accuracy | 68 / 70 | 0.9714 |
+| route_or_status_accuracy | 69 / 71 | 0.9718 |
+| tool_selection_accuracy | 69 / 70 | 0.9857 |
+| entity_extraction_accuracy | 70 / 70 | 1.0000 |
+| safety_gate_pass_rate | 71 / 71 | 1.0000 |
+| response_schema_valid_rate | 71 / 71 | 1.0000 |
+| end_to_end_success_rate | 69 / 71 | 0.9718 |
+| controlled_workflow | 9 / 9 | 1.0000 |
 
-已完成模拟业务闭环、RAG 检索和 Policy QA、LangGraph 单 Agent 编排、FastAPI 服务化、结构化日志、API 验收、稳定性测试、全量回归脚本和 Dockerfile 配置。
+保留 ASAE007、ASAE016 两个真实 badcase，详见 `docs/BADCASE_ANALYSIS.md`。
 
-未实现多 Agent、Memory、MCP、网页搜索、LLM 意图路由、复杂前端、生产级鉴权、分布式限流、监控平台、高可用部署或真实业务接入。
+## 项目边界
 
-## 关键结果
+- 所有订单、政策、工单均为模拟数据。
+- 不执行真实退款、真实取消订单、真实物流修改或真实客服动作。
+- 当前不是生产级系统，没有真实用户鉴权、权限模型、高可用和监控平台。
+- CI 只运行本地 pytest，不调用真实 LLM，不代表线上模型稳定性。
+- Dockerfile 可展示容器化配置，但当前发布版不声明已经完成线上部署验证。
 
-- 政策库：10 份模拟政策文档，当前索引约 42 个 chunk。
-- 检索实验：
-  - BM25：Hit@1 0.6667，Hit@3 1.0000。
-  - Dense：Hit@1 0.7333，Hit@3 0.8667。
-  - Hybrid：Hit@1 0.7333，Hit@3 0.9333。
-- 真实 Policy QA 验收：6 / 6 通过。
-- Agent 离线评测：24 条受控任务，路由、工具选择、订单号提取、缺订单号处理、工单确认安全等指标均为 1.0。
-- API 验收：8 个无 LLM 场景通过。
-- 稳定性测试：12 / 12 顺序调用通过；5 个并发请求中 3 个成功、2 个触发 `agent_busy`；未出现未预期 5xx。
-- 全量 pytest：87 passed，存在 1 条不影响结果的框架弃用 warning。
-- Docker：Dockerfile 已生成，当前环境未检测到 Docker CLI，因此未完成镜像实际构建验证。
+## 适合展示的亮点
 
-以上 Agent 评测结果来自当前定义的受控评测集，不代表真实开放场景泛化能力。
-
-## 当前边界
-
-- 所有业务数据和政策均为模拟数据。
-- 退款资格由规则引擎判断，不执行真实退款。
-- 工单写入本地 SQLite，只是模拟工单。
-- API 是本地单进程服务，不是生产级高可用系统。
-- 进程内 Semaphore 不是分布式限流。
-- Dockerfile 是容器化配置，不等于已完成线上部署。
-- 引用校验只证明引用来自本次证据，不保证答案语义绝对正确。
-
-## 下一步可选优化
-
-- 增加更大的独立评测集和人工标注 badcase。
-- 校准 Dense / Hybrid 相关性阈值。
-- 尝试受控 LLM 意图路由，但保留规则兜底。
-- 为 API 增加鉴权、限流、监控和持久化配置。
-- 将 SQLite 和日志目录挂载到宿主机，验证容器运行链路。
+- 将 LLM 问答与确定性业务规则清晰分层。
+- 对写操作使用显式确认和幂等保护。
+- 用离线评测集度量路由、工具选择、实体抽取、schema 和安全门控。
+- 保留 badcase，展示真实工程取舍和可迭代空间。

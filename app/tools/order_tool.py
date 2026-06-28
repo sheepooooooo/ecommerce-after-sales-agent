@@ -184,6 +184,33 @@ def convert_ticket_record_to_dict(ticket_record: sqlite3.Row) -> dict[str, Any]:
     return ticket_dict
 
 
+def get_ticket(ticket_id: int) -> dict[str, Any] | None:
+    """
+    Query one simulated ticket by id.
+    """
+    database_connection = open_database_connection()
+    try:
+        database_cursor = database_connection.cursor()
+        database_cursor.execute(
+            """
+            SELECT
+                ticket_id,
+                order_id,
+                issue_type,
+                description,
+                ticket_status,
+                created_at
+            FROM tickets
+            WHERE ticket_id = ?
+            """,
+            (ticket_id,),
+        )
+        ticket_record = database_cursor.fetchone()
+        return convert_ticket_record_to_dict(ticket_record) if ticket_record else None
+    finally:
+        database_connection.close()
+
+
 def create_ticket(
     order_id: str | None,
     issue_type: str,

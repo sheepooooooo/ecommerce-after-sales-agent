@@ -47,6 +47,7 @@ class PolicyQAResponse(BaseModel):
         "no_relevant_policy",
         "manual_review",
         "generation_error",
+        "degraded",
     ] = Field(description="回答状态。")
     answer: str = Field(description="最终返回给用户的中文回答。")
     retrieval_mode: str = Field(description="使用的检索模式。")

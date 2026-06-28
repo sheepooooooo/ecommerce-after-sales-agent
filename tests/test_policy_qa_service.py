@@ -16,6 +16,7 @@ from app.services.policy_qa_service import (
     answer_policy_question,
     build_policy_evidence_pack,
 )
+from app.services.error_taxonomy import ErrorCategory
 from app.tools.policy_retrieval_tool import retrieve_policy
 
 
@@ -313,6 +314,85 @@ def test_second_generation_failure_returns_generation_error() -> None:
         llm_generator=lambda messages: "不是 JSON",
     )
 
-    assert result["success"] is False
-    assert result["answer_status"] == "generation_error"
+    assert result["success"] is True
+    assert result["answer_status"] == "degraded"
     assert result["debug"]["generation_attempt_count"] == 2
+
+
+class StubLLMError(RuntimeError):
+    def __init__(self, message: str, error_category: str) -> None:
+        super().__init__(message)
+        self.error_category = error_category
+
+
+def test_retryable_llm_error_then_success() -> None:
+    build_policy_index()
+    state = {"count": 0, "chunk_id": ""}
+
+    def flaky_generator(messages: list[dict[str, str]]) -> dict:
+        state["count"] += 1
+        if state["count"] == 1:
+            raise StubLLMError("temporary timeout sk-secret", ErrorCategory.LLM_TIMEOUT.value)
+        state["chunk_id"] = extract_first_chunk_id_from_messages(messages)
+        return {
+            "answer": "已根据政策证据回答。",
+            "cited_chunk_ids": [state["chunk_id"]],
+            "needs_human_review": False,
+            "missing_information": [],
+        }
+
+    result = answer_policy_question(
+        "耳机保修多久？",
+        llm_generator=flaky_generator,
+        retry_config={"max_retries": 2, "base_delay_seconds": 0, "backoff_multiplier": 1},
+    )
+
+    assert result["success"] is True
+    assert result["answer_status"] == "answered"
+    assert result["debug"]["retry_count"] == 1
+    assert any(event["action_type"] == "retry_attempt" for event in result["debug"]["retry_trace_events"])
+
+
+def test_retry_exhausted_returns_degraded_without_fabricated_answer() -> None:
+    build_policy_index()
+
+    def broken_generator(messages: list[dict[str, str]]) -> dict:
+        raise StubLLMError("temporary timeout sk-secret", ErrorCategory.LLM_TIMEOUT.value)
+
+    result = answer_policy_question(
+        "耳机保修多久？",
+        llm_generator=broken_generator,
+        retry_config={"max_retries": 2, "base_delay_seconds": 0, "backoff_multiplier": 1},
+    )
+
+    assert result["success"] is True
+    assert result["answer_status"] == "degraded"
+    assert result["debug"]["degraded"] is True
+    assert result["debug"]["retry_count"] == 2
+    assert result["debug"]["fallback_action"] == "return_retrieved_policy_evidence"
+    assert "暂时不可用" in result["answer"]
+    assert result["generation"] is None
+    assert result["citations"]
+    assert "sk-secret" not in str(result["debug"]["retry_trace_events"])
+    assert any(event["action_type"] == "retry_exhausted" for event in result["debug"]["retry_trace_events"])
+    assert any(event["action_type"] == "fallback" for event in result["debug"]["retry_trace_events"])
+
+
+def test_non_retryable_configuration_error_does_not_retry() -> None:
+    build_policy_index()
+    state = {"count": 0}
+
+    def broken_config_generator(messages: list[dict[str, str]]) -> dict:
+        state["count"] += 1
+        raise StubLLMError("missing api key", ErrorCategory.LLM_CONFIGURATION_ERROR.value)
+
+    result = answer_policy_question(
+        "耳机保修多久？",
+        llm_generator=broken_config_generator,
+        retry_config={"max_retries": 2, "base_delay_seconds": 0, "backoff_multiplier": 1},
+    )
+
+    assert state["count"] == 1
+    assert result["answer_status"] == "degraded"
+    assert result["debug"]["retry_count"] == 0
+    assert result["debug"]["error_category"] == ErrorCategory.LLM_CONFIGURATION_ERROR.value
