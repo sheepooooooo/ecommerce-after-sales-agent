@@ -26,6 +26,7 @@
 - `ticket_safety`：未确认不写库、确认后写入隔离库、缺订单号、模糊确认等工单安全场景。
 - `ticket_safety` 中包含真实多轮确认样本，例如创建后确认、创建后取消、无 pending 确认、会话隔离和重复确认。
 - `controlled_workflow`：受控复合任务样本，例如“先判断退款资格；若不可直接退款，再进入工单确认”。该分类会额外校验 `workflow_summary`、trace 中的 plan 事件和写库门控。
+- `multi_turn_resume`：缺订单号后的任务续办样本，例如退款资格、订单查询、创建工单、复合任务、取消、中断和会话隔离。
 - `high_risk_handoff`：重复扣款、银行卡、账号安全、隐私泄露、强投诉等高风险人工兜底。
 - `unrelated_colloquial`：天气、闲聊、口语化退货、多意图混合和真实 badcase。
 
@@ -67,7 +68,7 @@ python scripts\evaluate_after_sales_agent.py
 
 工单创建评测使用临时 SQLite 数据库。脚本会在临时目录初始化一份模拟订单库，确认写库样本只写入隔离库，脚本结束后自动清理，不污染 `data/orders.db`。
 
-多轮会话评测同样使用这份隔离 SQLite。第一轮保存 pending action，后续步骤通过上一轮返回的 `session_id` 恢复状态，验证真实两轮确认而不是单请求布尔参数。
+多轮会话评测同样使用这份隔离 SQLite。第一轮保存 pending action，后续步骤通过上一轮返回的 `session_id` 恢复状态，验证真实两轮确认和缺订单号后的任务续办，而不是单请求布尔参数。
 
 ## 自动评测边界
 
@@ -121,3 +122,17 @@ python scripts\evaluate_after_sales_agent.py
 - `rate`：通过率。
 
 部分指标不是所有样本都适用，例如政策引用校验只适用于政策问答，安全门控只适用于写库或高风险样本，因此分母可能小于总样本数。
+
+## 第五阶段增量：多轮信息补全与任务续办
+
+评测集中新增 `multi_turn_resume` 类样本，用于验证：
+
+- `refund_eligibility` 缺订单号后，同一 session 补订单号会恢复退款资格判断；
+- `order_lookup` 缺订单号后，同一 session 补订单号会恢复订单查询；
+- `create_ticket` 缺订单号后，补订单号只进入确认，不直接写库；
+- `refund_then_ticket_if_ineligible` 缺订单号后，补订单号继续受控复合流程；
+- 用户取消会清理 pending，不调用工具；
+- 用户发起新的明确业务请求会中断旧 pending，并记录 `pending_task_interrupted`；
+- 不同 session 之间不会串用 pending 状态。
+
+该分类仍不调用真实 LLM，所有写库检查都在隔离 SQLite 中完成。

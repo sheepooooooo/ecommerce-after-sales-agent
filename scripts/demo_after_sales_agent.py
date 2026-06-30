@@ -228,6 +228,86 @@ def run_multi_turn_demo() -> None:
     show_result("会话隔离 B: 不能确认 A 的待办", session_b)
 
 
+def run_workflow_resume_demo() -> None:
+    refund_first = run_after_sales_agent(
+        "帮我退款",
+        request_id="resume-demo-refund-1",
+    )
+    show_result("多轮信息补全 1/10: 退款缺订单号", refund_first)
+    refund_second = run_after_sales_agent(
+        "ORD10003",
+        request_id="resume-demo-refund-2",
+        session_id=refund_first["session_id"],
+    )
+    show_result("多轮信息补全 2/10: 补订单号后恢复退款判断", refund_second)
+
+    lookup_first = run_after_sales_agent(
+        "查订单",
+        request_id="resume-demo-lookup-1",
+    )
+    show_result("多轮信息补全 3/10: 查询缺订单号", lookup_first)
+    lookup_second = run_after_sales_agent(
+        "ORD10003",
+        request_id="resume-demo-lookup-2",
+        session_id=lookup_first["session_id"],
+    )
+    show_result("多轮信息补全 4/10: 补订单号后恢复查询", lookup_second)
+
+    ticket_first = run_after_sales_agent(
+        "创建工单",
+        request_id="resume-demo-ticket-1",
+    )
+    show_result("多轮信息补全 5/10: 工单缺订单号", ticket_first)
+    ticket_second = run_after_sales_agent(
+        "ORD10003",
+        request_id="resume-demo-ticket-2",
+        session_id=ticket_first["session_id"],
+    )
+    show_result("多轮信息补全 6/10: 补订单号后进入确认", ticket_second)
+    ticket_confirm = run_after_sales_agent(
+        "确认",
+        request_id="resume-demo-ticket-3",
+        session_id=ticket_first["session_id"],
+    )
+    show_result("多轮信息补全 7/10: 确认后创建模拟工单", ticket_confirm)
+
+    workflow_first = run_after_sales_agent(
+        "订单能退吗，不行就建工单",
+        request_id="resume-demo-workflow-1",
+    )
+    show_result("多轮信息补全 8/10: 复合任务缺订单号", workflow_first)
+    workflow_second = run_after_sales_agent(
+        "ORD10003",
+        request_id="resume-demo-workflow-2",
+        session_id=workflow_first["session_id"],
+    )
+    show_result("多轮信息补全 9/10: 补订单号后继续复合流程", workflow_second)
+
+    cancel_first = run_after_sales_agent(
+        "帮我退款",
+        request_id="resume-demo-cancel-1",
+    )
+    cancelled = run_after_sales_agent(
+        "取消",
+        request_id="resume-demo-cancel-2",
+        session_id=cancel_first["session_id"],
+    )
+    show_result("多轮信息补全 10/10: 待补订单号时取消", cancelled)
+
+    interrupt_first = run_after_sales_agent(
+        "帮我退款",
+        request_id="resume-demo-interrupt-1",
+    )
+    interrupted = run_after_sales_agent(
+        "那我问一下保修多久",
+        request_id="resume-demo-interrupt-2",
+        session_id=interrupt_first["session_id"],
+    )
+    show_result("多轮信息补全: 新政策问题中断旧 pending", interrupted)
+    print("\nTrace 查询: resume-demo-workflow-2")
+    print(json.dumps(list_trace_events("resume-demo-workflow-2"), ensure_ascii=False, indent=2))
+
+
 def run_controlled_workflow_demo() -> None:
     eligible = run_after_sales_agent(
         "ORD10004 能退款吗？如果不能，帮我创建售后工单。",
@@ -318,6 +398,7 @@ def main() -> None:
     print("售后 Agent Demo：以下 print 仅用于本地学习演示，不是正式日志。")
     run_single_turn_demo()
     run_multi_turn_demo()
+    run_workflow_resume_demo()
     run_controlled_workflow_demo()
     run_trace_demo()
     run_retry_degradation_demo()

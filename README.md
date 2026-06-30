@@ -19,10 +19,10 @@
 - Policy QA：BM25 / Dense / Hybrid 检索，DeepSeek JSON 输出，引用合法性校验。
 - 订单查询：从本地 SQLite 查询模拟订单事实。
 - 退款资格判断：由规则引擎基于订单事实判断，不交给 LLM 猜测。
-- 模拟工单：创建前需要确认，支持 `session_id` 多轮恢复和 `idempotency_key` 幂等。
+- 模拟工单：创建前需要确认，支持 `session_id` 多轮信息补全、确认恢复和 `idempotency_key` 幂等。
 - 受控复合流程：先判断退款资格，不可直接退款且用户要求兜底时，再进入工单确认。
 - 可观测性：`request_id`、`tool_trace`、工具耗时、持久化 trace、错误分类、重试与降级。
-- 自动化评测：离线 Agent 评测集 71 条，pytest 与 full checks 可重复运行。
+- 自动化评测：离线 Agent 评测集 79 条，pytest 与 full checks 可重复运行。
 
 ## 架构图
 
@@ -55,9 +55,10 @@ Structured JSON response
 1. API 或脚本传入 `user_query`，可选传入 `session_id`、`request_id`、`idempotency_key`。
 2. Agent 抽取订单号并进行规则意图分类。
 3. 根据意图进入政策问答、订单查询、退款资格、工单确认或人工兜底路径。
-4. 所有写工单动作必须满足确认条件，并经过幂等保护。
-5. 响应中返回结构化字段、`session_id`、`tool_trace` 和调试摘要。
-6. trace 会脱敏保存，可通过 `/agent/traces/{request_id}` 查询。
+4. 缺订单号时会把受控任务保存到短期 session；同一 `session_id` 补充订单号后续办原任务。
+5. 所有写工单动作必须满足确认条件，并经过幂等保护。
+6. 响应中返回结构化字段、`session_id`、`tool_trace` 和调试摘要。
+7. trace 会脱敏保存，可通过 `/agent/traces/{request_id}` 查询。
 
 ## 受控复合任务
 
@@ -77,7 +78,7 @@ Structured JSON response
 
 ## Session、Trace、幂等、重试与降级
 
-- `session_id`：保存短期 pending action，用于真实两轮确认，不是长期记忆。
+- `session_id`：保存短期 pending action，用于缺订单号后的任务续办和真实两轮确认，不是长期记忆。
 - `trace`：保存脱敏后的执行轨迹，便于排查路由、工具调用、错误分类和耗时。
 - `idempotency_key`：重复确认或重复提交时返回同一个模拟工单，避免重复写库。
 - 重试与降级：仅用于政策问答中的只读 LLM 调用；工单写库、退款规则、缺订单号等业务结果不自动重试。
@@ -139,15 +140,16 @@ python scripts\run_policy_qa_live_acceptance.py
 
 | 指标 | 通过数 / 适用总数 | 比率 |
 |---|---:|---:|
-| 总样本 | 69 / 71 | 0.9718 |
-| intent_accuracy | 68 / 70 | 0.9714 |
-| route_or_status_accuracy | 69 / 71 | 0.9718 |
-| tool_selection_accuracy | 69 / 70 | 0.9857 |
-| entity_extraction_accuracy | 70 / 70 | 1.0000 |
-| safety_gate_pass_rate | 71 / 71 | 1.0000 |
-| response_schema_valid_rate | 71 / 71 | 1.0000 |
-| end_to_end_success_rate | 69 / 71 | 0.9718 |
+| 总样本 | 77 / 79 | 0.9747 |
+| intent_accuracy | 76 / 78 | 0.9744 |
+| route_or_status_accuracy | 77 / 79 | 0.9747 |
+| tool_selection_accuracy | 77 / 78 | 0.9872 |
+| entity_extraction_accuracy | 78 / 78 | 1.0000 |
+| safety_gate_pass_rate | 79 / 79 | 1.0000 |
+| response_schema_valid_rate | 79 / 79 | 1.0000 |
+| end_to_end_success_rate | 77 / 79 | 0.9747 |
 | controlled_workflow | 9 / 9 | 1.0000 |
+| multi_turn_resume | 8 / 8 | 1.0000 |
 
 评测模式说明：这是受控离线评测，政策问答使用 stub，不调用真实 LLM；写工单样本使用隔离 SQLite，不污染 `data/orders.db`。这些指标不代表线上准确率或真实用户场景泛化能力。
 
@@ -179,6 +181,7 @@ docs/             架构、Demo、评测、badcase 和发布说明
 - [受控复合工作流](docs/CONTROLLED_WORKFLOW_ORCHESTRATION.md)
 - [Agent 评测指南](docs/AGENT_EVAL_GUIDE.md)
 - [多轮 Session 设计](docs/MULTI_TURN_SESSION_DESIGN.md)
+- [多轮信息补全与任务续办](docs/MULTI_TURN_WORKFLOW_RESUME.md)
 - [Trace 与可观测性](docs/OBSERVABILITY_AND_TRACE.md)
 - [幂等与写安全](docs/IDEMPOTENCY_AND_WRITE_SAFETY.md)
 - [重试与降级](docs/RETRY_AND_DEGRADATION.md)

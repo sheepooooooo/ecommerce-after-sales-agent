@@ -26,6 +26,7 @@ def test_agent_eval_dataset_has_required_categories_and_size() -> None:
         "observability",
         "retry_and_degradation",
         "controlled_workflow",
+        "multi_turn_resume",
     }
     for item in questions:
         assert item["id"]

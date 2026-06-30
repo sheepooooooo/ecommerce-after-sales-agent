@@ -55,4 +55,4 @@ extract_order_id
 
 ## 评测口径
 
-当前 Agent 离线评测集为 71 条，端到端通过 69 条；`controlled_workflow` 分类 9/9 通过。ASAE007、ASAE016 保留为真实 badcase。
+当前 Agent 离线评测集为 79 条，端到端通过 77 条；`controlled_workflow` 分类 9/9 通过，`multi_turn_resume` 分类 8/8 通过。ASAE007、ASAE016 保留为真实 badcase。

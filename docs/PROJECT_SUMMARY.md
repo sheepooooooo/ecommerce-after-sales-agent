@@ -7,7 +7,7 @@
 - RAG 政策问答：基于模拟政策文档检索，支持引用校验；真实 LLM 调用仅用于政策问答链路。
 - 订单查询：从本地 SQLite 查询模拟订单。
 - 退款资格：由确定性规则引擎判断，不交给 LLM 决定。
-- 工单创建：必须经过显式确认，支持 session 恢复和幂等保护。
+- 工单创建：必须经过显式确认，支持缺订单号后的 session 续办、确认恢复和幂等保护。
 - 受控复合工作流：当前只支持 `refund_then_ticket_if_ineligible`。
 - FastAPI：提供 `/health`、`/agent/run`、`/agent/traces/{request_id}`。
 - 可观测性：记录 request_id、tool_trace、工具耗时、错误分类、retry/fallback 和脱敏持久化 trace。
@@ -24,18 +24,19 @@
 
 ## 当前指标
 
-当前受控离线 Agent 评测集共 71 条，端到端通过 69 条。
+当前受控离线 Agent 评测集共 79 条，端到端通过 77 条。
 
 | 指标 | 通过数 / 适用总数 | 比率 |
 |---|---:|---:|
-| intent_accuracy | 68 / 70 | 0.9714 |
-| route_or_status_accuracy | 69 / 71 | 0.9718 |
-| tool_selection_accuracy | 69 / 70 | 0.9857 |
-| entity_extraction_accuracy | 70 / 70 | 1.0000 |
-| safety_gate_pass_rate | 71 / 71 | 1.0000 |
-| response_schema_valid_rate | 71 / 71 | 1.0000 |
-| end_to_end_success_rate | 69 / 71 | 0.9718 |
+| intent_accuracy | 76 / 78 | 0.9744 |
+| route_or_status_accuracy | 77 / 79 | 0.9747 |
+| tool_selection_accuracy | 77 / 78 | 0.9872 |
+| entity_extraction_accuracy | 78 / 78 | 1.0000 |
+| safety_gate_pass_rate | 79 / 79 | 1.0000 |
+| response_schema_valid_rate | 79 / 79 | 1.0000 |
+| end_to_end_success_rate | 77 / 79 | 0.9747 |
 | controlled_workflow | 9 / 9 | 1.0000 |
+| multi_turn_resume | 8 / 8 | 1.0000 |
 
 保留 ASAE007、ASAE016 两个真实 badcase，详见 `docs/BADCASE_ANALYSIS.md`。
 

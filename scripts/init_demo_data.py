@@ -333,6 +333,8 @@ def initialize_database() -> Path:
                 pending_action TEXT,
                 pending_order_id TEXT,
                 pending_payload TEXT NOT NULL DEFAULT '{}',
+                pending_reason TEXT,
+                workflow_type TEXT,
                 conversation_status TEXT NOT NULL,
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL

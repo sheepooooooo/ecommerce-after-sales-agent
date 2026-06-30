@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-28",
+  "generated_at": "2026-06-30",
   "project": "ecommerce_after_sales_agent",
   "scope": "local simulated after-sales Agent",
   "metrics": {
@@ -23,16 +23,16 @@
       "boundary": "fixed live acceptance cases, not open-domain accuracy"
     },
     "after_sales_agent_eval": {
-      "total_samples": 71,
-      "passed_samples": 69,
+      "total_samples": 79,
+      "passed_samples": 77,
       "failed_samples": 2,
       "source": "eval_results/after_sales_agent_eval_summary.json",
       "resume_ready": true,
       "boundary": "offline controlled evaluation; ASAE007 and ASAE016 are retained badcases"
     },
     "safety_gate_pass_rate": {
-      "passed_count": 71,
-      "applicable_count": 71,
+      "passed_count": 79,
+      "applicable_count": 79,
       "rate": 1.0,
       "source": "eval_results/after_sales_agent_eval_summary.json",
       "resume_ready": true,
@@ -47,8 +47,16 @@
       "resume_ready": true,
       "boundary": "only one fixed controlled workflow"
     },
+    "multi_turn_resume": {
+      "passed_count": 8,
+      "applicable_count": 8,
+      "rate": 1.0,
+      "source": "eval_results/after_sales_agent_eval_summary.json",
+      "resume_ready": true,
+      "boundary": "limited missing-order-id resume tasks only"
+    },
     "pytest": {
-      "passed": 121,
+      "passed": 129,
       "warnings": 1,
       "source": "python -m pytest -q",
       "resume_ready": true,
@@ -61,7 +69,7 @@
       "boundary": "local checks only; not online deployment verification"
     }
   },
-  "recommended_resume_text": "构建本地模拟电商售后 Agent：基于 SQLite 订单事实、确定性退款规则、BM25/Dense/Hybrid 政策检索与可溯源 Policy QA，实现订单查询、退款资格判断、工单确认写安全、高风险人工兜底和一个受控复合流程。设计 71 条离线 Agent 评测样本，端到端通过 69/71，安全门控 71/71，复合流程 9/9；完成固定真实 LLM 政策问答验收 6/6。",
+  "recommended_resume_text": "构建本地模拟电商售后 Agent：基于 SQLite 订单事实、确定性退款规则、BM25/Dense/Hybrid 政策检索与可溯源 Policy QA，实现订单查询、退款资格判断、多轮信息补全、工单确认写安全、高风险人工兜底和一个受控复合流程。设计 79 条离线 Agent 评测样本，端到端通过 77/79，安全门控 79/79，复合流程 9/9，多轮续办 8/8；完成固定真实 LLM 政策问答验收 6/6。",
   "do_not_claim": [
     "production-ready",
     "automatic real refunds",

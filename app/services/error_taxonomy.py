@@ -2,7 +2,13 @@
 
 from __future__ import annotations
 
-from enum import StrEnum
+from enum import Enum
+
+class StrEnum(str, Enum):
+    """兼容 Python 3.10 的简化 StrEnum。"""
+
+    def __str__(self) -> str:
+        return str(self.value)
 from typing import Any
 
 

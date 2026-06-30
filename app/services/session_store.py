@@ -18,8 +18,10 @@ import app.tools.order_tool as order_tool_module
 
 SESSION_STATUS_IDLE = "idle"
 SESSION_STATUS_PENDING = "pending_confirmation"
+SESSION_STATUS_AWAITING_ORDER_ID = "awaiting_order_id"
 SESSION_STATUS_COMPLETED = "completed"
 SESSION_STATUS_CANCELLED = "cancelled"
+SESSION_STATUS_INTERRUPTED = "interrupted"
 
 
 def _now_text() -> str:
@@ -52,12 +54,22 @@ def ensure_session_table(connection: sqlite3.Connection | None = None) -> None:
                 pending_action TEXT,
                 pending_order_id TEXT,
                 pending_payload TEXT NOT NULL DEFAULT '{}',
+                pending_reason TEXT,
+                workflow_type TEXT,
                 conversation_status TEXT NOT NULL,
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
             """
         )
+        existing_columns = {
+            row[1]
+            for row in active_connection.execute("PRAGMA table_info(conversation_sessions)").fetchall()
+        }
+        if "pending_reason" not in existing_columns:
+            active_connection.execute("ALTER TABLE conversation_sessions ADD COLUMN pending_reason TEXT")
+        if "workflow_type" not in existing_columns:
+            active_connection.execute("ALTER TABLE conversation_sessions ADD COLUMN workflow_type TEXT")
         active_connection.commit()
     finally:
         if owns_connection:
@@ -75,6 +87,8 @@ def _row_to_session(row: sqlite3.Row) -> dict[str, Any]:
         "pending_action": row["pending_action"],
         "pending_order_id": row["pending_order_id"],
         "pending_payload": pending_payload,
+        "pending_reason": row["pending_reason"],
+        "workflow_type": row["workflow_type"],
         "conversation_status": row["conversation_status"],
         "created_at": row["created_at"],
         "updated_at": row["updated_at"],
@@ -92,6 +106,8 @@ def get_or_create_session(session_id: str | None = None) -> dict[str, Any]:
                 pending_action,
                 pending_order_id,
                 pending_payload,
+                pending_reason,
+                workflow_type,
                 conversation_status,
                 created_at,
                 updated_at
@@ -112,11 +128,13 @@ def get_or_create_session(session_id: str | None = None) -> dict[str, Any]:
                 pending_action,
                 pending_order_id,
                 pending_payload,
+                pending_reason,
+                workflow_type,
                 conversation_status,
                 created_at,
                 updated_at
             )
-            VALUES (?, NULL, NULL, '{}', ?, ?, ?)
+            VALUES (?, NULL, NULL, '{}', NULL, NULL, ?, ?, ?)
             """,
             (actual_session_id, SESSION_STATUS_IDLE, now, now),
         )
@@ -137,6 +155,8 @@ def get_session(session_id: str) -> dict[str, Any] | None:
                 pending_action,
                 pending_order_id,
                 pending_payload,
+                pending_reason,
+                workflow_type,
                 conversation_status,
                 created_at,
                 updated_at
@@ -154,6 +174,9 @@ def save_pending_action(
     pending_action: str,
     pending_order_id: str | None,
     pending_payload: dict[str, Any],
+    pending_reason: str | None = None,
+    workflow_type: str | None = None,
+    conversation_status: str = SESSION_STATUS_PENDING,
 ) -> dict[str, Any]:
     now = _now_text()
     with _connect() as connection:
@@ -164,6 +187,8 @@ def save_pending_action(
                 pending_action = ?,
                 pending_order_id = ?,
                 pending_payload = ?,
+                pending_reason = ?,
+                workflow_type = ?,
                 conversation_status = ?,
                 updated_at = ?
             WHERE session_id = ?
@@ -172,7 +197,9 @@ def save_pending_action(
                 pending_action,
                 pending_order_id,
                 json.dumps(pending_payload, ensure_ascii=False),
-                SESSION_STATUS_PENDING,
+                pending_reason,
+                workflow_type,
+                conversation_status,
                 now,
                 session_id,
             ),
@@ -191,6 +218,8 @@ def clear_pending_action(session_id: str, conversation_status: str = SESSION_STA
                 pending_action = NULL,
                 pending_order_id = NULL,
                 pending_payload = '{}',
+                pending_reason = NULL,
+                workflow_type = NULL,
                 conversation_status = ?,
                 updated_at = ?
             WHERE session_id = ?
@@ -212,6 +241,8 @@ def mark_pending_action_completed(session_id: str, completed_payload: dict[str, 
                 pending_action = NULL,
                 pending_order_id = NULL,
                 pending_payload = ?,
+                pending_reason = NULL,
+                workflow_type = NULL,
                 conversation_status = ?,
                 updated_at = ?
             WHERE session_id = ?
@@ -230,7 +261,7 @@ def mark_pending_action_completed(session_id: str, completed_payload: dict[str, 
 def has_pending_action(session: dict[str, Any] | None, pending_action: str | None = None) -> bool:
     if not session:
         return False
-    if session.get("conversation_status") != SESSION_STATUS_PENDING:
+    if session.get("conversation_status") not in {SESSION_STATUS_PENDING, SESSION_STATUS_AWAITING_ORDER_ID}:
         return False
     if not session.get("pending_action"):
         return False

@@ -16,19 +16,20 @@ git check-ignore -v .env data\orders.db logs\agent_api.log data\indexes eval_res
 
 ## Agent 离线评测
 
-当前受控离线 Agent 评测集共 71 条，端到端通过 69 条。
+当前受控离线 Agent 评测集共 79 条，端到端通过 77 条。
 
 | 指标 | 通过数 / 适用总数 | 比率 |
 |---|---:|---:|
-| 总样本 | 69 / 71 | 0.9718 |
-| intent_accuracy | 68 / 70 | 0.9714 |
-| route_or_status_accuracy | 69 / 71 | 0.9718 |
-| tool_selection_accuracy | 69 / 70 | 0.9857 |
-| entity_extraction_accuracy | 70 / 70 | 1.0000 |
-| safety_gate_pass_rate | 71 / 71 | 1.0000 |
-| response_schema_valid_rate | 71 / 71 | 1.0000 |
-| end_to_end_success_rate | 69 / 71 | 0.9718 |
+| 总样本 | 77 / 79 | 0.9747 |
+| intent_accuracy | 76 / 78 | 0.9744 |
+| route_or_status_accuracy | 77 / 79 | 0.9747 |
+| tool_selection_accuracy | 77 / 78 | 0.9872 |
+| entity_extraction_accuracy | 78 / 78 | 1.0000 |
+| safety_gate_pass_rate | 79 / 79 | 1.0000 |
+| response_schema_valid_rate | 79 / 79 | 1.0000 |
+| end_to_end_success_rate | 77 / 79 | 0.9747 |
 | controlled_workflow | 9 / 9 | 1.0000 |
+| multi_turn_resume | 8 / 8 | 1.0000 |
 
 失败样本保留为真实 badcase：`ASAE007`、`ASAE016`。不通过删除样本或修改预期来提升指标。
 
